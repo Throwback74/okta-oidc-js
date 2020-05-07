@@ -122,6 +122,34 @@ export class OktaAuthService {
       }
       return idToken ? idToken.claims : undefined;
     }
+    /**
+     * Sets the configuration object used.
+     */
+  
+    setOktaConfig(auth: OktaConfig, router?: Router) {
+            // Assert Configuration
+            assertIssuer(auth.issuer, auth.testing);
+            assertClientId(auth.clientId);
+            assertRedirectUri(auth.redirectUri)
+      
+            this.observers = [];
+      
+            this.oktaAuth = new OktaAuth(buildConfigObject(auth));
+      
+            this.oktaAuth.userAgent = `${packageInfo.name}/${packageInfo.version} ${this.oktaAuth.userAgent}`;
+      
+            /**
+             * Scrub scopes to ensure 'openid' is included
+             */
+            auth.scope = this.scrubScopes(auth.scope);
+      
+            /**
+             * Cache the auth config.
+             */
+            this.config = auth;
+      
+            this.$authenticationState = new Observable((observer: Observer<boolean>) => {this.observers.push(observer)})
+    }
 
     /**
      * Returns the configuration object used.
